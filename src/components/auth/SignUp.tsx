@@ -1,25 +1,38 @@
+import "react-toastify/dist/ReactToastify.css";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { useNavigate } from "react-router-dom";
-import Form from "./Form";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import { signUp } from "./authSlice";
 import { useEffect } from "react";
-import useNotify from "../../hooks/notify.hook";
+import { ToastContainer } from "react-toastify";
+import { signUp, setError } from "./authSlice";
 import { authConstans } from "../../constans/authConstans";
+import useNotify from "../../hooks/notify.hook";
+import useAuth from "../../hooks/auth.hook";
+import Form from "./Form";
 
 const SignUp = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { notifyError } = useNotify();
+  const {isAuth} = useAuth()
+  const { notifyError, notifySuccess } = useNotify();
   const { error } = useAppSelector((state) => state.authSlice);
 
   useEffect(() => {
-    notifyError(authConstans[error]);
+    if (isAuth) {
+      navigate('/')
+    }
+  }, []);
+
+  useEffect(() => {
+    if (error) {
+      notifyError(authConstans[error]);
+    }
   }, [error]);
 
   const handleRegister = (email: string, password: string) => {
-    dispatch(signUp({ email, password }));
+    dispatch(signUp({ email, password }))
+    .unwrap()
+    .then(() => notifySuccess(authConstans.registerSuccess))
+    .catch(()=> dispatch(setError()))
   };
 
   return (

@@ -1,0 +1,55 @@
+.toolbar {
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    background-color: #323e4e;
+    min-height: 100vh;
+    gap: 5px;
+}
+
+.toolbar svg {
+    fill: white;
+}
+
+.toolbar svg:hover {
+    fill: #50a650;
+}
+
+.toolbar .active svg {
+    fill: #50a650;
+}
+
+.brush-preview,
+.toolbar button {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.brush {
+    border-radius: 100%;
+}
+.brush-preview {
+    background-color: white
+}
+
+input[type="range"] {
+    width: 40px;
+}
+
+input[type="color"] {
+	-webkit-appearance: none;
+	border: none;
+	width: 40px;
+	height: 40px;
+    cursor: pointer;
+    margin:5px 0;
+}
+input[type="color"]::-webkit-color-swatch-wrapper {
+	padding: 0;
+}
+input[type="color"]::-webkit-color-swatch {
+	border: none;
+}

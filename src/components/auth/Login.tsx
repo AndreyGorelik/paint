@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { ToastContainer } from "react-toastify";
-import { login } from "./authSlice";
+import { login, setError } from "./authSlice";
 import useAuth from "../../hooks/auth.hook";
 import useNotify from "../../hooks/notify.hook";
 import Form from "./Form";
@@ -15,25 +15,27 @@ const Login = () => {
   const { isAuth } = useAuth();
   const navigate = useNavigate();
 
-  // useEffect(() => {
-  //   if (isAuth) {
-  //     // navigate('/')
-  //   }
-  // }, []);
+  useEffect(() => {
+    if (isAuth) {
+      navigate('/')
+    }
+  }, []);
 
   useEffect(() => {
-   notifyError(authConstans[error])
+    if (error) {
+      notifyError(authConstans[error])
+    }
   }, [error]);
 
   const handleLogin = (email: string, password: string) => {
     dispatch(login({email, password}))
       .unwrap()
-      .then(() => navigate('/1'))
+      .then(() => navigate('/'))
+      .catch(()=> dispatch(setError()))
   };
 
   return (
     <div className="signin">
-      {/* <Form title="Sign In" handleClick={handleLogin} /> */}
       <Form title="Sign In" handleClick={handleLogin} />
       <ToastContainer position="bottom-center" />
     </div>

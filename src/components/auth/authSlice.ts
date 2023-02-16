@@ -1,14 +1,8 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { getDatabase, ref, set, child, get } from "firebase/database";
+import { getDatabase, ref, set } from "firebase/database";
 import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, createUserWithEmailAndPassword } from "firebase/auth";
 import { FirebaseError } from '@firebase/util'
-
-interface Auth {
-    email: null | string;
-    id: null | string;
-    loadingStatus: boolean;
-    error: any;
-}
+import { Auth } from '../../interfaces';
 
 const initialState: Auth = {
     email: null,
@@ -24,8 +18,11 @@ export const login = createAsyncThunk(
         try {
             const response = await signInWithEmailAndPassword(auth, email, password)
             return { email: response.user.email, id: response.user.uid };
-        } catch (error: any) {
-            return rejectWithValue(error.code);
+        } catch (error: unknown) {
+            if (error instanceof FirebaseError) {
+                console.error(error.code)
+                return rejectWithValue(error.code);
+            }
         }
     }
 )
@@ -41,8 +38,10 @@ export const signUp = createAsyncThunk(
                 email: email,
             });
             return setId;
-        } catch (error: any) {
-            return rejectWithValue(error.code);
+        } catch (error: unknown) {
+            if (error instanceof FirebaseError) {
+                return rejectWithValue(error.code);
+            }
         }
     }
 )
@@ -53,8 +52,11 @@ export const restorePassword = createAsyncThunk(
         const auth = getAuth();
         try {
             return await sendPasswordResetEmail(auth, email)
-        } catch (error: any) {
-            return rejectWithValue(error.code);
+        } catch (error: unknown) {
+            if (error instanceof FirebaseError) {
+                console.error(error.code)
+                return rejectWithValue(error.code);
+            }
         }
     }
 )
@@ -69,54 +71,54 @@ const authSlice = createSlice({
         },
         setLoadingStatus(state, action) {
             state.loadingStatus = action.payload;
+        },
+        setError(state) {
+            state.error = null;
         }
     },
     extraReducers: (builder) => {
         builder
             .addCase(login.pending, state => {
                 state.loadingStatus = true
-                if (state.error) {
-                    state.error = null
-                }
+                state.error = null
             })
             .addCase(login.fulfilled, (state, action) => {
                 state.loadingStatus = false
-                state.email = action.payload.email
-                state.id = action.payload.id
+                state.error = null
+                state.email = action.payload!.email
+                state.id = action.payload!.id
             })
             .addCase(login.rejected, (state, action) => {
                 state.loadingStatus = false
-                state.error = action.payload
+                state.error = (action.payload as string)
             })
             .addCase(restorePassword.pending, (state) => {
-                if (state.error) {
-                    state.error = null
-                }
+                state.loadingStatus = true
+                state.error = null
             })
             .addCase(restorePassword.fulfilled, (state) => {
-                if (state.error) {
-                    state.error = null
-                }
+                state.loadingStatus = false
+                state.error = null
             })
             .addCase(restorePassword.rejected, (state, action) => {
-                state.error = action.payload
+                state.loadingStatus = false
+                state.error = (action.payload as string)
             })
             .addCase(signUp.pending, state => {
-                if (state.error) {
-                    state.error = null
-                }
+                state.loadingStatus = true
+                state.error = null
             })
             .addCase(signUp.fulfilled, state => {
-                if (state.error) {
-                    state.error = null
-                }
+                state.loadingStatus = false
+                state.error = null
             })
             .addCase(signUp.rejected, (state, action) => {
-                state.error = action.payload
+                state.loadingStatus = false
+                state.error = (action.payload as string)
             })
     }
 });
 
 const { reducer, actions } = authSlice;
-export const { setUser, setLoadingStatus } = actions;
+export const { setUser, setLoadingStatus, setError } = actions;
 export default reducer;

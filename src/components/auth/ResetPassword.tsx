@@ -1,22 +1,34 @@
+import "react-toastify/dist/ReactToastify.css";
+import "./auth.css";
 import React from "react";
-
+import { ReactComponent as Spinner } from "../../assets/images/spinner.svg";
 import { useState, useEffect } from "react";
 import { ToastContainer } from "react-toastify";
 import { authConstans } from "../../constans/authConstans";
-import { restorePassword } from "./authSlice";
-import "react-toastify/dist/ReactToastify.css";
+import { restorePassword, setError } from "./authSlice";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
+import { useNavigate } from "react-router-dom";
 import useNotify from "../../hooks/notify.hook";
-import "./auth.css";
+import useAuth from "../../hooks/auth.hook";
 
 const ResetPassword = () => {
   const [email, setEmail] = useState("");
   const dispatch = useAppDispatch();
+  const { isAuth } = useAuth();
+  const navigate = useNavigate();
   const { notifyError, notifySuccess } = useNotify();
-  const { error } = useAppSelector((state) => state.authSlice);
+  const { error, loadingStatus } = useAppSelector((state) => state.authSlice);
 
   useEffect(() => {
-    notifyError(authConstans[error]);
+    if (isAuth) {
+      navigate("/");
+    }
+  }, []);
+
+  useEffect(() => {
+    if (error !== null) {
+      notifyError(authConstans[error]);
+    }
   }, [error]);
 
   const authRecovery = (e: React.FormEvent) => {
@@ -25,7 +37,8 @@ const ResetPassword = () => {
       .unwrap()
       .then(() => {
         notifySuccess(authConstans.recoveryPassword);
-      });
+      })
+      .catch(() => dispatch(setError()));
   };
 
   return (
@@ -38,7 +51,11 @@ const ResetPassword = () => {
           placeholder="email"
           required
         />
-        <button className="btn-stand">{authConstans.reset}</button>
+        {loadingStatus === true ? (
+          <Spinner />
+        ) : (
+          <button className="btn-stand">{authConstans.reset}</button>
+        )}
       </form>
       <ToastContainer position="bottom-center" />
     </>

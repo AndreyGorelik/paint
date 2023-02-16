@@ -6,7 +6,6 @@ import "./auth.css"
 const Form = ({title, handleClick}: {title: string, handleClick: (email: string, password: string) => void}) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
   const { loadingStatus } = useAppSelector( state => state.authSlice)
 
   return (
